@@ -1,0 +1,11 @@
+unit Projeto10.Comuns.Types;
+
+interface
+
+type
+
+  TInsertUpdate  = (iuinsert, iuupdate, iunone) ;
+
+implementation
+
+end.

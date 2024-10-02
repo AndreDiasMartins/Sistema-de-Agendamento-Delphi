@@ -1,0 +1,83 @@
+unit Agendamento.View.Deshboard;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TFormNewCadastro = class(TForm)
+    Panel1: TPanel;
+    Button1: TButton;
+    ButtonAgendados: TButton;
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormNewCadastro: TFormNewCadastro;
+
+implementation
+
+uses
+  Agendamento.View.Agendamento, Agendamento.Controller.Agendamento;
+
+{$R *.dfm}
+procedure TFormNewCadastro.Button1Click(Sender: TObject);
+var
+  AData_agendamento,AHoraAgendamento, ANome_cliente, Aservico, Acontato, Aobservacao, StrErr: string;
+  Msg: string;
+begin
+  try
+
+    AData_agendamento:= '';
+    AHoraAgendamento:= '';
+    ANome_cliente := '';
+    Aservico := '';
+    Acontato := '';
+    Aobservacao := '';
+
+    if not TfAgendamento.GetInstance.Execute(dsInsert, AData_agendamento, AHoraAgendamento, ANome_cliente, Aservico, Acontato, Aobservacao, StrErr) then
+      Abort;
+
+    if not TAgendamentoController.GetInstance.New(StrErr) then
+      Abort;
+
+    with TAgendamentoController.GetInstance.AgendamentoModel do
+    begin
+      Data_agendamento := AData_agendamento;
+      Hora_agendamento := AHoraAgendamento;
+      Nome_cliente := ANome_cliente;
+      Servico := Aservico;
+      Contato := Acontato;
+      Observacoes := Aobservacao;
+    end;
+
+    // Montando a mensagem para mostrar os dados
+    Msg := Format('Dados do agendamento:' + sLineBreak +
+                  'Data: %s' + sLineBreak +
+                  'Hora: %s' + sLineBreak +
+                  'Nome do Cliente: %s' + sLineBreak +
+                  'Serviço: %s' + sLineBreak +
+                  'Contato: %s' + sLineBreak +
+                  'Observações: %s',
+                  [AData_agendamento, AHoraAgendamento,
+                   ANome_cliente, Aservico, Acontato, Aobservacao]);
+
+    // Exibindo a mensagem com os dados
+    ShowMessage(Msg);
+
+    if not TAgendamentoController.GetInstance.Post(StrErr) then
+      Abort;
+
+  except
+    ShowMessage(StrErr);
+  end;
+end;
+
+
+end.

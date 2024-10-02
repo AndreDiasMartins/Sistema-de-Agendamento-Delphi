@@ -1,0 +1,108 @@
+unit Agendamento.Controller.Agendamento;
+
+interface
+
+uses
+  System.SysUtils, FireDAC.Comp.Client, Agendamento.Model.Agendamento, Agendamento.DAO.Agendamento;
+
+type
+
+  TAgendamentoController = class
+  strict private
+    class var FInstance: TAgendamentoController;
+  private
+    FAgendamentoModel: TAgendamentoModel;
+    FAgendamentoDAO: TAgendamentoDAO;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    class function GetInstance: TAgendamentoController;
+    class procedure ReleaseInstance;
+
+    function Open(var Query: TFDMemTable; AParams: Array of variant; out StrErr: string): Boolean;
+    function New(out StrErr: string): Boolean;
+    function Edit(Id: Integer; out StrErr: string): Boolean;
+    function Delete(Id: Integer; out StrErr: string): Boolean;
+    function Post(out StrErr: string): Boolean;
+    function Upsert(out StrErr: string): Boolean;
+    function Report(var Query: TFDMemTable; AReport: Integer; AParams: Array of variant; out StrErr: string): Boolean;
+
+    property AgendamentoModel: TAgendamentoModel read FAgendamentoModel write FAgendamentoModel;
+  end;
+
+implementation
+
+{ TAgendamentoController }
+
+constructor TAgendamentoController.Create;
+begin
+  FAgendamentoModel := TAgendamentoModel.Create;
+  FAgendamentoDAO := TAgendamentoDAO.Create;
+end;
+
+destructor TAgendamentoController.Destroy;
+begin
+  FreeAndNil(FAgendamentoDAO);
+  FreeAndNil(FAgendamentoModel);
+
+  inherited;
+end;
+
+class function TAgendamentoController.GetInstance: TAgendamentoController;
+begin
+  if not Assigned(FInstance) then
+    FInstance := TAgendamentoController.Create;
+  Result := FInstance;
+end;
+
+class procedure TAgendamentoController.ReleaseInstance;
+begin
+  if Assigned(FInstance) then
+    FInstance.Free;
+end;
+
+function TAgendamentoController.Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.Open(Query, AParams, StrErr);
+end;
+
+
+function TAgendamentoController.New(out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.New(FAgendamentoModel, StrErr);
+end;
+
+function TAgendamentoController.Edit(Id: Integer; out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.Edit(Id, FAgendamentoModel, StrErr);
+end;
+
+function TAgendamentoController.Delete(Id: Integer; out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.Delete(Id, StrErr);
+end;
+
+function TAgendamentoController.Post(out StrErr: string): Boolean;
+begin
+
+  Result := FAgendamentoDAO.Post(FAgendamentoModel, StrErr);
+end;
+
+function TAgendamentoController.Upsert(out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.Upsert(FAgendamentoModel, StrErr);
+end;
+
+function TAgendamentoController.Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  Result := FAgendamentoDAO.Report(Query, AReport, AParams, StrErr);
+end;
+
+initialization
+
+finalization
+
+TAgendamentoController.ReleaseInstance;
+
+end.

@@ -1,0 +1,268 @@
+unit Agendamento.DAO.Agendamento;
+
+interface
+
+uses
+  Agendamento.Model.Agendamento, Agendamento.DAO.Connection,
+  FireDAC.Comp.Client, System.SysUtils, dialogs, System.Classes,
+  Agendar.Comuns.Types;
+
+const
+  acmModulo = '';
+
+type
+
+  TAgendamentoDAO = class
+
+  private
+    FSQL: TStringList;
+    FInsertUpdate: TInsertUpdate;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    function Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+    function New(var R: TAgendamentoModel; out StrErr: string): Boolean;
+    function Edit(Id: Integer; var R: TAgendamentoModel; out StrErr: string): Boolean;
+    function Delete(Id: Integer; out StrErr: string): Boolean;
+    function Post(var R: TAgendamentoModel; out StrErr: string): Boolean;
+    function Upsert(var R: TAgendamentoModel; out StrErr: string): Boolean;
+    function Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+  end;
+
+implementation
+
+{ TAgendamentoDAO }
+
+constructor TAgendamentoDAO.Create;
+begin
+  FSQL := TStringList.Create;
+  FInsertUpdate := TInsertUpdate.iuNone;
+end;
+
+destructor TAgendamentoDAO.Destroy;
+begin
+  FreeAndNil(FSQL);
+
+  inherited;
+end;
+
+function TAgendamentoDAO.Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  try
+    StrErr := 'DAO[Agendamento]: Impossível abrir query.';
+    FSQL.Clear;
+    FSQL.Add('SELECT data_agendamento, hora_agendamento, nome_cliente, servico, contato, observacoes, created_at, updated_at ');
+    FSQL.Add('FROM Agendamentos ');
+    FSQL.Add('WHERE id=:id');
+
+    TDAO.GetInstance.fdQuery.Close;
+    TDAO.GetInstance.fdQuery.Open(FSQL.Text, AParams);
+
+    StrErr := 'DAO[Agendamento]: Erro ao importar query.';
+    Query.Active := False;
+    Query.AppendData(TDAO.GetInstance.fdQuery);
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TAgendamentoDAO.New(var R: TAgendamentoModel; out StrErr: string): Boolean;
+begin
+  R.Id := 0;
+  R.Data_agendamento := '';
+  R.Hora_agendamento := '';
+  R.Nome_cliente := '';
+  R.Servico := '';
+  R.Contato := '';
+  R.Observacoes := '';
+
+  FInsertUpdate := TInsertUpdate.iuInsert;
+  Result := True;
+end;
+
+function TAgendamentoDAO.Edit(Id: Integer; var R: TAgendamentoModel; out StrErr: string): Boolean;
+begin
+  FInsertUpdate := TInsertUpdate.iuUpdate;
+  StrErr := '';
+  try
+    StrErr := 'DAO[Agendamento]: Não foi possível editar.';
+    FSQL.Clear;
+    FSQL.Add('SELECT id, data_agendamento, hora_agendamento, nome_cliente, servico, contato, observacoes ');
+    FSQL.Add('FROM Agendamento ');
+    FSQL.Add('WHERE id=:id ');
+    TDAO.GetInstance.fdQuery.Close;
+    TDAO.GetInstance.fdQuery.Open(FSQL.Text, [Id]);
+
+    StrErr := 'DAO[Agendamento]: Registro não encontrado.';
+    if TDAO.GetInstance.fdQuery.RecordCount = 0 then
+      Abort;
+
+    StrErr := 'DAO[Agendamento]: Falha ao retornar campos.';
+    R.Id := TDAO.GetInstance.fdQuery.Fields[0].AsInteger;
+    R.Data_agendamento := TDAO.GetInstance.fdQuery.Fields[1].AsString;
+    R.Hora_agendamento := TDAO.GetInstance.fdQuery.Fields[2].AsString;
+    R.Nome_cliente := TDAO.GetInstance.fdQuery.Fields[3].AsString;
+    R.Servico := TDAO.GetInstance.fdQuery.Fields[4].AsString;
+    R.Contato := TDAO.GetInstance.fdQuery.Fields[5].AsString;
+    R.Observacoes := TDAO.GetInstance.fdQuery.Fields[6].AsString;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+
+end;
+
+function TAgendamentoDAO.Delete(Id: Integer; out StrErr: string): Boolean;
+var
+  AText: string;
+begin
+  TDAO.GetInstance.Connection.StartTransaction;
+  try
+    StrErr := 'DAO[Agendamento]: Falha ao executar SQL.';
+    FSQL.Clear;
+    FSQL.Add('DELETE FROM Agendamento ');
+    FSQL.Add('WHERE id=:id ');
+    TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [Id]);
+
+    StrErr := 'DAO[Agendamento]: Falha ao concluir transação.';
+    TDAO.GetInstance.Connection.Commit;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.RollBack;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+
+end;
+
+function TAgendamentoDAO.Post(var R: TAgendamentoModel; out StrErr: string): Boolean;
+var
+  AText: string;
+begin
+  TDAO.GetInstance.Connection.StartTransaction;
+  try
+    case FInsertUpdate of
+
+      TInsertUpdate.iuInsert:
+        begin
+          StrErr := 'DAO[Agendamento]: Falha ao incluir registro.';
+          FSQL.Clear;
+          FSQL.Add('INSERT INTO agendamentos (data_agendamento, hora_agendamento, nome_cliente, servico, contato, observacoes) ');
+          FSQL.Add('VALUES (:data_agendamento::date, :hora_agendamento::time, :nome_cliente, :servico, :contato, :observacoes) ');
+          TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [R.Data_agendamento, R.Hora_agendamento, R.Nome_cliente, R.Servico, R.Contato, R.Observacoes]);
+        end;
+
+      TInsertUpdate.iuUpdate:
+        begin
+          StrErr := 'DAO[Agendamento]: Falha ao alterar registro.';
+          FSQL.Clear;
+          FSQL.Add('UPDATE agendamentos ');
+          FSQL.Add('SET data_agendamento=:data_agendamento, hora_agendamento=:hora_agendamento, nome_cliente=:nome_cliente, servico=:servico, contato=:contato, observacoes=:observacoes');
+          FSQL.Add('WHERE id=:id ');
+          TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [R.Data_agendamento, R.Hora_agendamento, R.Nome_cliente, R.Servico, R.Contato, R.Observacoes, R.Id]);
+        end;
+
+    else
+      StrErr := 'DAO[Agendamento]: Status de inclusão ou alteração não determinado.';
+      Abort;
+    end;
+
+    StrErr := 'DAO[Agendamento]: Falha ao concluir transação.';
+    TDAO.GetInstance.Connection.Commit;
+
+    StrErr := '';
+    FInsertUpdate := TInsertUpdate.iuNone;
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.RollBack;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TAgendamentoDAO.Upsert(var R: TAgendamentoModel; out StrErr: string): Boolean;
+begin
+  try
+    StrErr := 'DAO[Agendamento]: Falha ao definir status.';
+    FSQL.Clear;
+    FSQL.Add('SELECT COALESCE(MAX(*), 0) ');
+    FSQL.Add('FROM Agendamento ');
+    FSQL.Add('WHERE id=:id ');
+    if TDAO.GetInstance.Connection.ExecSQLScalar(FSQL.Text, [R.Id]) = 1 then
+      FInsertUpdate := TInsertUpdate.iuUpdate
+    else
+      FInsertUpdate := TInsertUpdate.iuInsert;
+
+    if not Post(R, StrErr) then
+      Abort;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.RollBack;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TAgendamentoDAO.Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  try
+    case AReport of
+      0:
+        begin
+          StrErr := 'DAO[Agendamento]: Impossível abrir query.';
+          FSQL.Clear;
+          FSQL.Add('SELECT id, data_agendamento, hora_agendamento, nome_cliente, servico, contato, observacoes, created_at, updated_at ');
+          FSQL.Add('FROM Agendamento ');
+          FSQL.Add('WHERE id=:id');
+        end;
+    else
+      StrErr := 'DAO[Agendamento]: Relatório não definido.';
+      Abort;
+    end;
+
+    TDAO.GetInstance.fdQuery.Close;
+    TDAO.GetInstance.fdQuery.Open(FSQL.Text, AParams);
+
+    StrErr := 'DAO[Agendamento]: Erro ao importar query.';
+    Query.Active := False;
+    Query.AppendData(TDAO.GetInstance.fdQuery);
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+end.

@@ -1,0 +1,69 @@
+object DAO: TDAO
+  Height = 410
+  Width = 619
+  object Connection: TFDConnection
+    Params.Strings = (
+      'Database=Dbandre'
+      'User_Name=postgres'
+      'Password=postgres'
+      'Server=localhost'
+      'DriverID=pG')
+    Connected = True
+    LoginPrompt = False
+    Left = 64
+    Top = 32
+  end
+  object fdQuery: TFDQuery
+    Connection = Connection
+    SQL.Strings = (
+      'select * from  agendamentos ')
+    Left = 176
+    Top = 32
+    object fdQueryid: TIntegerField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+    end
+    object fdQuerydata_agendamento: TDateField
+      FieldName = 'data_agendamento'
+      Origin = 'data_agendamento'
+    end
+    object fdQueryhora_agendamento: TTimeField
+      FieldName = 'hora_agendamento'
+      Origin = 'hora_agendamento'
+    end
+    object fdQuerynome_cliente: TWideStringField
+      FieldName = 'nome_cliente'
+      Origin = 'nome_cliente'
+      Size = 100
+    end
+    object fdQueryservico: TWideStringField
+      FieldName = 'servico'
+      Origin = 'servico'
+      Size = 100
+    end
+    object fdQuerycontato: TWideStringField
+      FieldName = 'contato'
+      Origin = 'contato'
+      Size = 50
+    end
+    object fdQueryobservacoes: TWideMemoField
+      FieldName = 'observacoes'
+      Origin = 'observacoes'
+      BlobType = ftWideMemo
+    end
+    object fdQuerycreated_at: TSQLTimeStampField
+      FieldName = 'created_at'
+      Origin = 'created_at'
+    end
+    object fdQueryupdated_at: TSQLTimeStampField
+      FieldName = 'updated_at'
+      Origin = 'updated_at'
+    end
+  end
+  object FDPhysPgDriverLink1: TFDPhysPgDriverLink
+    VendorLib = 'C:\Fontes\Projeto4\Win32\Debug\libpq.dll'
+    Left = 72
+    Top = 104
+  end
+end

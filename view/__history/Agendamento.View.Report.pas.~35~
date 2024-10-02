@@ -1,0 +1,119 @@
+unit Agendamento.View.Report;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf, Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  RLReport;
+
+type
+  TFormReport = class(TForm)
+    RLReport1: TRLReport;
+    RLBand1: TRLBand;
+    RLLabel1: TRLLabel;
+    RLBand2: TRLBand;
+    RLDBText2: TRLDBText;
+    RLDBText3: TRLDBText;
+    RLDBText4: TRLDBText;
+    RLDBText5: TRLDBText;
+    RLDBText6: TRLDBText;
+    RLBand3: TRLBand;
+    RLSystemInfo1: TRLSystemInfo;
+    RLSystemInfo2: TRLSystemInfo;
+    RLLabel9: TRLLabel;
+    RLLabel8: TRLLabel;
+    RLLabel10: TRLLabel;
+    RLLabel12: TRLLabel;
+    RLLabel13: TRLLabel;
+    RLBand4: TRLBand;
+    RLLabel3: TRLLabel;
+    RLLabel4: TRLLabel;
+    RLLabel5: TRLLabel;
+    RLLabel6: TRLLabel;
+    RLLabel7: TRLLabel;
+    QAgendado: TFDMemTable;
+    DataSource1: TDataSource;
+    QAgendadoid: TIntegerField;
+    QAgendadodata_agendamento: TWideStringField;
+    QAgendadohora_agendamento: TWideStringField;
+    QAgendadonome_cliente: TWideStringField;
+    QAgendadoservico: TWideStringField;
+    QAgendadocontato: TWideStringField;
+    QAgendadoobservacoes: TWideMemoField;
+    QAgendadocreated_at: TSQLTimeStampField;
+    QAgendadoupdated_at: TSQLTimeStampField;
+    RLDBText1: TRLDBText;
+    RLDBText7: TRLDBText;
+    RLDBText8: TRLDBText;
+  private
+    { Private declarations }
+
+  strict private
+    class var Finstance: TFormReport;
+  public
+    { Public declarations }
+    class function GetInstance: TFormReport;
+    class procedure RealeseInstance;
+    function Execute(var id: integer; out StrErr: string): Boolean;
+  end;
+
+var
+  FormReport: TFormReport;
+
+implementation
+
+uses
+  Agendamento.Controller.Agendamento;
+
+{$R *.dfm}
+{ TFormReport }
+
+function TFormReport.Execute(var id: integer; out StrErr: string): Boolean;
+begin
+  try
+
+    if not TAgendamentoController.GetInstance.open(QAgendado, [id], StrErr) then
+      abort;
+
+    // QAgendadodata_agendamento.AsString := Data_agendamento;
+    // QAgendadohora_agendamento.AsString := HoraAgendamento;
+    // QAgendadonome_cliente.AsString := Nome;
+    // QAgendadoservico.AsString := servico;
+    // QAgendadocontato.AsString := contato;
+    // QAgendadoobservacoes.AsString := observação;
+    // QAgendadocreated_at.AsString := create;
+    // QAgendadoupdated_at.AsString := update;
+
+    StrErr := 'Erro ao visualizar Rlreport';
+    RLReport1.Preview();
+    StrErr := '';
+    Result := True
+  except
+    Result := False;
+
+  end;
+end;
+
+class function TFormReport.GetInstance: TFormReport;
+begin
+  if not Assigned(Finstance) then
+    Finstance := TFormReport.create(nil);
+  Result := Finstance;
+end;
+
+class procedure TFormReport.RealeseInstance;
+begin
+  if Assigned(Finstance) then
+    FreeAndNil(Finstance);
+end;
+
+initialization
+
+finalization
+
+TFormReport.RealeseInstance;
+
+end.

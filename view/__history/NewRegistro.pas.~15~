@@ -1,0 +1,106 @@
+unit NewRegistro;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB,
+  FireDAC.Comp.DataSet, FireDAC.Comp.Client, Vcl.StdCtrls, Vcl.DBCtrls,
+  Vcl.Mask, Vcl.ExtCtrls;
+
+type
+  TFormNewRegistro = class(TForm)
+    FDNewRegistro: TFDQuery;
+    DataSource1: TDataSource;
+    FDNewRegistrodata_agendamento: TDateField;
+    FDNewRegistrohora_agendamento: TTimeField;
+    FDNewRegistronome_cliente: TWideStringField;
+    FDNewRegistroservico: TWideStringField;
+    FDNewRegistrocontato: TWideStringField;
+    FDNewRegistroobservacoes: TWideMemoField;
+    Label1: TLabel;
+    DBEdit1: TDBEdit;
+    Label2: TLabel;
+    DBEdit2: TDBEdit;
+    Label3: TLabel;
+    DBEdit3: TDBEdit;
+    Label4: TLabel;
+    DBEdit4: TDBEdit;
+    Label5: TLabel;
+    DBEdit5: TDBEdit;
+    Label6: TLabel;
+    DBMemo1: TDBMemo;
+    Button1: TButton;
+    Button2: TButton;
+    ComboBox1: TComboBox;
+    DBLookupComboBox1: TDBLookupComboBox;
+    qDataHoraDisponivel: TFDMemTable;
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+
+  strict private
+    class var Finstance: TFormNewRegistro;
+
+  public
+    { Public declarations }
+    class function GetInstance: TFormNewRegistro;
+    class procedure RealeaseInstance;
+    class function Execute(var Data_agendamento: String; var HoraAgendamento: String; var Nome_cliente: String; var servico: string; var contato: string; var observação: string; out StrErr: string): Boolean;
+  end;
+
+var
+  FormNewRegistro: TFormNewRegistro;
+
+implementation
+
+uses
+  Agendamento.Controller.DatasDisponiveis;
+
+{$R *.dfm}
+{ TFormNewRegistro }
+
+class function TFormNewRegistro.Execute(var Data_agendamento, HoraAgendamento, Nome_cliente, servico, contato, observação: string; out StrErr: string): Boolean;
+begin
+  try
+
+  except
+    result := false
+  end;
+
+end;
+
+procedure TFormNewRegistro.FormCreate(Sender: TObject);
+var
+  StrErr: string;
+begin
+  try
+    if not TDatasDisponiveisController.GetInstance.OpenDataHoraDisponiveis(qDataHoraDisponivel, [], StrErr) then
+      Abort;
+  except
+
+  end;
+end;
+
+class function TFormNewRegistro.GetInstance: TFormNewRegistro;
+begin
+  if not Assigned(Finstance) then
+    Finstance := TFormNewRegistro.Create(nil);
+  result := Finstance;
+end;
+
+class procedure TFormNewRegistro.RealeaseInstance;
+begin
+  if Assigned(Finstance) then
+    FreeAndNil(Finstance);
+end;
+
+initialization
+
+finalization
+
+TFormNewRegistro.RealeaseInstance;
+
+end.

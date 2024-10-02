@@ -1,0 +1,259 @@
+unit servicos.DAO.servicos;
+
+interface
+
+uses
+  servicos.Model.servicos, Agendamento.DAO.Connection, Agendar.Comuns.Types, FireDAC.Comp.Client, System.SysUtils, dialogs, System.Classes;
+
+const
+  acmModulo = '';
+
+type
+
+  TservicosDAO = class
+
+  private
+    FSQL: TStringList;
+    FInsertUpdate: TInsertUpdate;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    function Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+    function New(var R: TservicosModel; out StrErr: string): Boolean;
+    function Edit(Id: Integer; var R: TservicosModel; out StrErr: string): Boolean;
+    function Delete(Id: Integer;  out StrErr: string): Boolean;
+    function Post(var R: TservicosModel; out StrErr: string): Boolean;
+    function Upsert(var R: TservicosModel; out StrErr: string): Boolean;
+    function Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+  end;
+
+implementation
+
+{ TservicosDAO }
+
+constructor TservicosDAO.Create;
+begin
+  FSQL := TStringList.Create;
+  FInsertUpdate:= TInsertUpdate.iuNone;
+end;
+
+destructor TservicosDAO.Destroy;
+begin
+  FreeAndNil(FSQL);
+
+  inherited;
+end;
+
+function TservicosDAO.Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  try
+    StrErr := 'DAO[servicos]: Impossível abrir query.';
+    FSQL.Clear;
+    FSQL.Add('SELECT id, servico ');
+    FSQL.Add('FROM servicos ');
+    FSQL.Add('WHERE Cast(id as text) like :id');
+
+    TDAO.GetInstance.FDQuery.Close;
+    TDAO.GetInstance.FDQuery.Open(FSQL.Text, AParams);
+
+    StrErr := 'DAO[servicos]: Erro ao importar query.';
+    Query.Active := False;
+    Query.AppendData(TDAO.GetInstance.FDQuery);
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TservicosDAO.New(var R: TservicosModel; out StrErr: string): Boolean;
+begin
+  R.ID := 0;
+  R.Servico := '';
+
+  FInsertUpdate:= TInsertUpdate.iuInsert;
+  Result := True;
+end;
+
+function TservicosDAO.Edit(Id: Integer; var R: TservicosModel; out StrErr: string): Boolean;
+begin
+  FInsertUpdate:= TInsertUpdate.iuUpdate;
+  StrErr := '';
+  try
+    StrErr := 'DAO[servicos]: Não foi possível editar.';
+    FSQL.Clear;
+    FSQL.Add('SELECT id, servico ');
+    FSQL.Add('FROM servicos ');
+    FSQL.Add('WHERE id=:id ');
+    TDAO.GetInstance.FDQuery.Close;
+    TDAO.GetInstance.FDQuery.Open(FSQL.Text, [R.Id]);
+
+    StrErr := 'DAO[servicos]: Registro não encontrado.';
+    if TDAO.GetInstance.FDQuery.RecordCount = 0 then
+      Abort;
+
+    StrErr := 'DAO[servicos]: Falha ao retornar campos.';
+    R.ID := TDAO.GetInstance.FDQuery.Fields[0].AsInteger;
+    R.Servico := TDAO.GetInstance.FDQuery.Fields[1].AsString;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+
+end;
+
+function TservicosDAO.Delete(Id: Integer;  out StrErr: string): Boolean;
+var
+  AText: string;
+begin
+  TDAO.GetInstance.Connection.StartTransaction;
+  try
+    StrErr := 'DAO[servicos]: Falha ao executar SQL.';
+    FSQL.Clear;
+    FSQL.Add('DELETE FROM servicos ');
+    FSQL.Add('WHERE id=:id ');
+    TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [Id]);
+
+    
+    StrErr := 'DAO[servicos]: Falha ao concluir transação.';
+    TDAO.GetInstance.Connection.Commit;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.RollBack;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+
+end;
+
+function TservicosDAO.Post(var R: TservicosModel; out StrErr: string): Boolean;
+var
+  AText: string;
+begin
+  TDAO.GetInstance.Connection.StartTransaction;
+  try
+    case FInsertUpdate of 
+
+      TInsertUpdate.iuInsert:
+        begin
+          StrErr := 'DAO[servicos]: Falha ao incluir registro.';
+          FSQL.Clear;
+          FSQL.Add('INSERT INTO servicos (id, servico) ');
+          FSQL.Add('VALUES (:id, :servico) ');
+          TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [R.ID, R.Servico]);
+
+        end;
+
+      TInsertUpdate.iuUpdate:
+        begin
+          StrErr := 'DAO[servicos]: Falha ao alterar registro.';
+          FSQL.Clear;
+          FSQL.Add('UPDATE servicos ');
+          FSQL.Add('SET servico=:servico ');
+          FSQL.Add('WHERE id=:id ');
+          TDAO.GetInstance.Connection.ExecSQL(FSQL.Text, [R.Servico, R.ID]);
+
+        end;
+
+    else
+      StrErr := 'DAO[servicos]: Status de inclusão ou alteração não determinado.';
+      Abort;
+    end;
+
+    StrErr := 'DAO[servicos]: Falha ao concluir transação.';
+    TDAO.GetInstance.Connection.Commit;
+
+    StrErr := '';
+    FInsertUpdate:= TInsertUpdate.iuNone;
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.Rollback;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TservicosDAO.Upsert(var R: TservicosModel; out StrErr: string): Boolean;
+begin
+  try
+    StrErr := 'DAO[servicos]: Falha ao definir status.';
+    FSQL.Clear;
+    FSQL.Add('SELECT COALESCE(MAX(*), 0) ');
+    FSQL.Add('FROM servicos ');
+    FSQL.Add('WHERE id=:id ');
+    if TDAO.GetInstance.Connection.ExecSQLScalar(FSQL.Text, [R.Id]) = 1 then
+      FInsertUpdate := TInsertUpdate.iuUpdate 
+    else  
+      FInsertUpdate := TInsertUpdate.iuInsert; 
+
+    if not Post(R, StrErr) then 
+      Abort;
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      TDAO.GetInstance.Connection.Rollback;
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function TservicosDAO.Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  try
+    case AReport of 
+      0: 
+        begin 
+          StrErr := 'DAO[servicos]: Impossível abrir query.';
+          FSQL.Clear;
+          FSQL.Add('SELECT id, servico ');
+          FSQL.Add('FROM servicos ');
+          FSQL.Add('WHERE id=:id');
+        end; 
+    else 
+      StrErr := 'DAO[servicos]: Relatório não definido.';
+      Abort; 
+    end; 
+
+    TDAO.GetInstance.FDQuery.Close;
+    TDAO.GetInstance.FDQuery.Open(FSQL.Text, AParams);
+
+    StrErr := 'DAO[servicos]: Erro ao importar query.';
+    Query.Active := False;
+    Query.AppendData(TDAO.GetInstance.FDQuery);
+
+    StrErr := '';
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      StrErr := StrErr + sLineBreak + TDAO.GetInstance.TryExcept(E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+end.

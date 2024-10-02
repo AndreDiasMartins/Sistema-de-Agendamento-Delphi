@@ -1,0 +1,88 @@
+unit Agendamento.View.Deshboard;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Agendamento.View.crud;
+
+type
+  TFormNewCadastro = class(TForm)
+    Panel1: TPanel;
+    Button1: TButton;
+    ButtonAgendados: TButton;
+    procedure Button1Click(Sender: TObject);
+    procedure ButtonAgendadosClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormNewCadastro: TFormNewCadastro;
+
+implementation
+
+uses
+  Agendamento.View.Agendamento, Agendamento.Controller.Agendamento;
+
+{$R *.dfm}
+
+procedure TFormNewCadastro.Button1Click(Sender: TObject);
+var
+  AData_agendamento, AHoraAgendamento, ANome_cliente, Aservico, Acontato, Aobservacao, StrErr: string;
+  Msg: string;
+begin
+  try
+    AData_agendamento := '';
+    AHoraAgendamento := '';
+    ANome_cliente := '';
+    Aservico := '';
+    Acontato := '';
+    Aobservacao := '';
+
+    if not TfAgendamento.GetInstance.Execute(dsInsert, AData_agendamento, AHoraAgendamento, ANome_cliente, Aservico, Acontato, Aobservacao, StrErr) then
+      Abort;
+
+    if not TAgendamentoController.GetInstance.New(StrErr) then
+      Abort;
+
+    with TAgendamentoController.GetInstance.AgendamentoModel do
+    begin
+      Data_agendamento := AData_agendamento;
+      Hora_agendamento := AHoraAgendamento;
+      Nome_cliente := ANome_cliente;
+      Servico := Aservico;
+      Contato := Acontato;
+      Observacoes := Aobservacao;
+    end;
+
+    if not TAgendamentoController.GetInstance.Post(StrErr) then
+      Abort;
+
+    ShowMessage('consulta: ' + Aservico + ' agendado dia: ' + AData_agendamento + ' as ' + AHoraAgendamento);
+  except
+    ShowMessage(StrErr);
+  end;
+end;
+
+procedure TFormNewCadastro.ButtonAgendadosClick(Sender: TObject);
+var
+  StrErr: String;
+begin
+  try
+    if not TFormAGendadosGrud then
+
+
+
+
+  except
+    ShowMessage(StrErr);
+  end;
+
+
+end;
+
+end.

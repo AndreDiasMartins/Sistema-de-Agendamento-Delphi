@@ -1,0 +1,51 @@
+unit NewRegistro;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
+
+type
+  TFormNewRegistro = class(TForm)
+  private
+    { Private declarations }
+
+  strict private
+    class var Finstance: TFormNewRegistro;
+
+  public
+    { Public declarations }
+    class function GetInstance: TFormNewRegistro;
+    class procedure RealeaseInstance;
+    class function Execute(): Boolean;
+  end;
+
+var
+  FormNewRegistro: TFormNewRegistro;
+
+implementation
+
+{$R *.dfm}
+{ TFormNewRegistro }
+
+class function TFormNewRegistro.GetInstance: TFormNewRegistro;
+begin
+  if not Assigned(Finstance) then
+    Finstance := TFormNewRegistro.Create(nil);
+  result := Finstance;
+end;
+
+class procedure TFormNewRegistro.RealeaseInstance;
+begin
+  if Assigned(Finstance) then
+    FreeAndNil(Finstance);
+end;
+
+initialization
+
+finalization
+
+TFormNewRegistro.RealeaseInstance;
+
+end.

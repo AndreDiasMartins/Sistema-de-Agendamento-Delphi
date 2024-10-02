@@ -1,0 +1,48 @@
+object DAO: TDAO
+  Height = 410
+  Width = 619
+  object Connection: TFDConnection
+    Params.Strings = (
+      'Database=Dbandre'
+      'User_Name=postgres'
+      'Password=postgres'
+      'Server=localhost'
+      'DriverID=pG')
+    Connected = True
+    LoginPrompt = False
+    Left = 64
+    Top = 32
+  end
+  object fdQuery: TFDQuery
+    Connection = Connection
+    SQL.Strings = (
+      'select * from produtos_teste')
+    Left = 176
+    Top = 32
+    object fdQueryid: TIntegerField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+    end
+    object fdQuerynome: TWideStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Size = 100
+    end
+    object fdQuerypreco: TBCDField
+      FieldName = 'preco'
+      Origin = 'preco'
+      Precision = 10
+      Size = 2
+    end
+    object fdQueryquantidade_em_estoque: TIntegerField
+      FieldName = 'quantidade_em_estoque'
+      Origin = 'quantidade_em_estoque'
+    end
+  end
+  object FDPhysPgDriverLink1: TFDPhysPgDriverLink
+    VendorLib = 'C:\Fontes\Projeto4\Win32\Debug\libpq.dll'
+    Left = 72
+    Top = 104
+  end
+end

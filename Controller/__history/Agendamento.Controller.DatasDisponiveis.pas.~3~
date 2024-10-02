@@ -1,0 +1,114 @@
+unit Agendamento.Controller.DatasDisponiveis;
+
+interface
+
+uses
+  System.SysUtils, FireDAC.Comp.Client, Agendamento.Model.DatasDisponiveis, Agendamento.DAO.DatasDisponiveis;
+
+type
+
+  TDatasDisponiveisController = class
+  strict private
+    class var FInstance: TDatasDisponiveisController;
+  private
+    FDatasDisponiveisModel: TDatasDisponiveisModel;
+    FDatasDisponiveisDAO: TDatasDisponiveisDAO;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    class function GetInstance: TDatasDisponiveisController;
+    class procedure ReleaseInstance;
+
+    function Open(var Query: TFDMemTable; AParams: Array of variant; out StrErr: string): Boolean;
+    function OpenDataHoraDisponiveis(var Query: TFDMemTable; AParams: Array of variant; out StrErr: string): Boolean;
+    function New(out StrErr: string): Boolean;
+    function Edit(Id: Integer; out StrErr: string): Boolean;
+    function Delete(Id: Integer; out StrErr: string): Boolean;
+    function Post(out StrErr: string): Boolean;
+    function Upsert(out StrErr: string): Boolean;
+    function Report(var Query: TFDMemTable; AReport: Integer; AParams: Array of variant; out StrErr: string): Boolean;
+
+    property DatasDisponiveisModel: TDatasDisponiveisModel read FDatasDisponiveisModel write FDatasDisponiveisModel;
+  end;
+
+implementation
+
+{ TDatasDisponiveisController }
+
+constructor TDatasDisponiveisController.Create;
+begin
+  FDatasDisponiveisModel := TDatasDisponiveisModel.Create;
+  FDatasDisponiveisDAO := TDatasDisponiveisDAO.Create;
+end;
+
+destructor TDatasDisponiveisController.Destroy;
+begin
+  FreeAndNil(FDatasDisponiveisDAO);
+  FreeAndNil(FDatasDisponiveisModel);
+
+  inherited;
+end;
+
+class function TDatasDisponiveisController.GetInstance: TDatasDisponiveisController;
+begin
+  if not Assigned(FInstance) then
+    FInstance := TDatasDisponiveisController.Create;
+  Result := FInstance;
+end;
+
+class procedure TDatasDisponiveisController.ReleaseInstance;
+begin
+  if Assigned(FInstance) then
+    FInstance.Free;
+end;
+
+function TDatasDisponiveisController.Open(var Query: TFDMemTable; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Open(Query, AParams, StrErr);
+end;
+
+function TDatasDisponiveisController.OpenDataHoraDisponiveis(
+  var Query: TFDMemTable; AParams: array of variant;
+  out StrErr: string): Boolean;
+begin
+
+end;
+
+function TDatasDisponiveisController.New(out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.New(FDatasDisponiveisModel, StrErr);
+end;
+
+function TDatasDisponiveisController.Edit(Id: Integer; out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Edit(Id, FDatasDisponiveisModel, StrErr);
+end;
+
+function TDatasDisponiveisController.Delete(Id: Integer; out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Delete(Id, StrErr);
+end;
+
+function TDatasDisponiveisController.Post(out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Post(FDatasDisponiveisModel, StrErr);
+end;
+
+function TDatasDisponiveisController.Upsert(out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Upsert(FDatasDisponiveisModel, StrErr);
+end;
+
+function TDatasDisponiveisController.Report(var Query: TFDMemTable; AReport: Integer; AParams: array of variant; out StrErr: string): Boolean;
+begin
+  Result := FDatasDisponiveisDAO.Report(Query, AReport, AParams, StrErr);
+end;
+
+initialization
+
+finalization
+
+TDatasDisponiveisController.ReleaseInstance;
+
+end.
