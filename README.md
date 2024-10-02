@@ -26,6 +26,7 @@ Para que o sistema funcione corretamente, é necessário configurar a conexão c
 
 
 # Tabelas utilizadas, basta vc criar elas no seu banco Postgres:
+```Bash
 CREATE TABLE Agendamentos (
     id SERIAL PRIMARY KEY,
     data_agendamento VARCHAR NOT NULL,
@@ -37,13 +38,16 @@ CREATE TABLE Agendamentos (
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+```
 
+```Bash
 REATE TABLE datas_disponiveis (
     id SERIAL PRIMARY KEY,
     data VARCHAR(10) NOT NULL,
     hora VARCHAR(8) NOT NULL,
     disponivel BOOLEAN NOT NULL
 );
+```
 
 ## função trigger no banco postgres para autalizar as datas ja sendo utilizadas automaticamente:
 ```bash
