@@ -26,7 +26,7 @@ Para que o sistema funcione corretamente, é necessário configurar a conexão c
 
 
 # Tabelas utilizadas, basta vc criar elas no seu banco Postgres:
-## CREATE TABLE Agendamentos (
+CREATE TABLE Agendamentos (
     id SERIAL PRIMARY KEY,
     data_agendamento VARCHAR NOT NULL,
     hora_agendamento VARCHAR NOT NULL,
@@ -36,16 +36,16 @@ Para que o sistema funcione corretamente, é necessário configurar a conexão c
     observacoes TEXT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
-# );
+);
 
-# REATE TABLE datas_disponiveis (
+REATE TABLE datas_disponiveis (
     id SERIAL PRIMARY KEY,
     data VARCHAR(10) NOT NULL,
     hora VARCHAR(8) NOT NULL,
     disponivel BOOLEAN NOT NULL
-# );
+);
 
-## função trigger para autalizar as datas ja sendo utilizadas automaticamente:
+## função trigger no banco postgres para autalizar as datas ja sendo utilizadas automaticamente:
 CREATE OR REPLACE FUNCTION set_disponivel_false()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -63,7 +63,7 @@ FOR EACH ROW
 EXECUTE PROCEDURE set_disponivel_false(); 
 
 
-# Agr uma função trigger para voltar os horarios disponiveis, caso o usuario desista  e cancele (excluindo o registro na tabela Agendamentos)
+# Agr uma função trigger no banco postgres para voltar os horarios disponiveis, caso o usuario desista  e cancele (excluindo o registro na tabela Agendamentos)
 CREATE OR REPLACE FUNCTION set_disponivel_true()
 RETURNS TRIGGER AS $$
 BEGIN
