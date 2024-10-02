@@ -46,6 +46,7 @@ REATE TABLE datas_disponiveis (
 );
 
 ## função trigger no banco postgres para autalizar as datas ja sendo utilizadas automaticamente:
+```bash
 CREATE OR REPLACE FUNCTION set_disponivel_false()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -56,14 +57,18 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+```
 
+```bash
 CREATE TRIGGER update_disponibilidade
 AFTER INSERT ON Agendamentos
 FOR EACH ROW
 EXECUTE PROCEDURE set_disponivel_false(); 
-
+```
 
 # Agr uma função trigger no banco postgres para voltar os horarios disponiveis, caso o usuario desista  e cancele (excluindo o registro na tabela Agendamentos)
+
+```bash
 CREATE OR REPLACE FUNCTION set_disponivel_true()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -74,12 +79,14 @@ BEGIN
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
+```
 
+```bash
 CREATE TRIGGER restore_disponibilidade
 AFTER DELETE ON Agendamentos
 FOR EACH ROW
 EXECUTE PROCEDURE set_disponivel_true();
-
+```
 
 ## Executando o Projeto
 Após configurar a conexão com o banco de dados, você pode executar o sistema de agendamento e começar a utilizá-lo.
